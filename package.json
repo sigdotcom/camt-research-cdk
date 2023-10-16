@@ -10,9 +10,10 @@
     "test": "jest",
     "cdk": "cdk",
     "login": "aws sso login",
-    "deploy": "npm run build && cdk bootstrap --profile research -c environment=prod && cdk synth -c environment=prod && cdk deploy --profile research -c environment=prod"
+    "deploy:all": "npm run build && cdk bootstrap --profile dev -c environment=dev && cdk synth -c environment=dev && cdk deploy --all --profile dev -c environment=dev"
   },
   "devDependencies": {
+    "@types/aws-lambda": "^8.10.124",
     "@types/jest": "^29.5.4",
     "@types/node": "20.5.3",
     "aws-cdk": "2.94.0",
@@ -25,7 +26,9 @@
     "@aws-cdk/aws-amplify-alpha": "^2.95.1-alpha.0",
     "@aws-sdk/client-cognito-identity-provider": "^3.414.0",
     "@aws-sdk/client-dynamodb": "^3.417.0",
+    "@aws-sdk/client-identitystore": "^3.428.0",
     "aws-cdk-lib": "^2.95.1",
+    "aws-lambda": "^1.0.7",
     "constructs": "^10.2.70",
     "source-map-support": "^0.5.21"
   }

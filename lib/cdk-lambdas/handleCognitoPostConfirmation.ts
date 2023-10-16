@@ -25,14 +25,16 @@ const handler = async (event: any) => {
     const command = new AdminUpdateUserAttributesCommand(params);
     await cognitoIdp.send(command);
 
-    // Insert the new user entry into the "UserTable"
+    // Insert the new user entry into the "ResearchUserTable"
     const dynamoDbParams = {
-      TableName: "UserTable",
+      TableName: "ResearchUserTable",
       Item: {
         userId: { S: event.userName },
         firstName: { S: event.request.userAttributes.given_name },
         lastName: { S: event.request.userAttributes.family_name },
         role: { S: "member" },
+        email: { S: event.request.userAttributes.email },
+        awsAccountStatus: { S: "false" },
       },
     };
     const putCommand = new PutItemCommand(dynamoDbParams);
