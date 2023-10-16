@@ -55,9 +55,9 @@ export default class CognitoConstruct extends Construct {
     this.userPoolClient = this.userPool.addClient("CamtUserPoolClient");
 
     const ssmParameters = [
-      { name: "userPoolId", value: this.userPool.userPoolId },
+      { name: "userPoolIdResearch", value: this.userPool.userPoolId },
       {
-        name: "userPoolWebClientId",
+        name: "userPoolWebClientIdResearch",
         value: this.userPoolClient.userPoolClientId,
       },
     ];
@@ -72,7 +72,9 @@ export default class CognitoConstruct extends Construct {
   public get authParameterArns(): string[] {
     return this.parameterArns;
   }
-
+  public get getUserPool(): UserPool {
+    return this.userPool;
+  }
   public get getArn(): string {
     return this.userPool.userPoolArn;
   }

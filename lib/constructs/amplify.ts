@@ -20,7 +20,7 @@ export default class AmplifyConstruct extends Construct {
   constructor(scope: Construct, id: string, props: AmplifyConstructProps) {
     super(scope, id);
 
-    const oauthTokenSecretName: string = `GITHUB_TOKEN_DEV`;
+    const oauthTokenSecretName: string = `GITHUB_TOKEN_${props.environment.toUpperCase()}`;
     const oauthToken: SecretValue = SecretValue.secretsManager(
       oauthTokenSecretName,
       {
