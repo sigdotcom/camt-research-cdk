@@ -6,12 +6,19 @@ import {
 } from "aws-cdk-lib/aws-apigateway";
 import { UserPool } from "aws-cdk-lib/aws-cognito";
 import { Construct } from "constructs";
-
+import {
+  Code,
+  Function as LambdaFunction,
+  Runtime,
+} from "aws-cdk-lib/aws-lambda";
 import LambdaEndpointConstruct, {
   LambdaEndpointConstructProps,
 } from "./constructs/lambda-endpoint";
 import { HttpMethods, Permission } from "./types";
 import SsmContruct from "./constructs/ssm";
+import S3Construct from "./constructs/s3";
+import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
+import { EventType } from "aws-cdk-lib/aws-s3";
 interface CamtBackendStackProps extends StackProps {
   userPool: UserPool;
 }
@@ -68,6 +75,13 @@ export class CamtBackendStack extends Stack {
         method: HttpMethods.POST,
         path: "users/account/create",
         permissions: [Permission.DYNAMODB, Permission.IDENTITYSTORE],
+      },
+      {
+        name: "getPresignedUrl",
+        entry: "dist/lib/backend-lambdas/getPresignedUrl.js",
+        method: HttpMethods.GET,
+        path: "upload/url",
+        permissions: [Permission.S3, Permission.SSM],
       },
       {
         name: "deleteAccount",
@@ -137,7 +151,51 @@ export class CamtBackendStack extends Stack {
       });
     });
 
-    const ssmParameters = [{ name: "apiUrlResearch", value: api.url }];
+    const researchBucket = new S3Construct(this, "ResearchBucketConstruct", {
+      environment: environment,
+      name: `camt-${environment}-research-bucket`,
+    });
+
+    const ssmParameters = [
+      { name: "apiUrlResearch", value: api.url },
+      { name: "camtResearchBucket", value: researchBucket.name },
+    ];
+
+    const dataProcessorLambdaRole = new Role(this, "LambdaRole", {
+      assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
+    });
+
+    dataProcessorLambdaRole.addToPolicy(
+      new PolicyStatement({
+        actions: ["*"],
+        resources: ["*"],
+      })
+    );
+
+    // New permissions for CloudWatch Logs
+    dataProcessorLambdaRole.addToPolicy(
+      new PolicyStatement({
+        actions: [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+        ],
+        resources: ["arn:aws:logs:*:*:*"],
+      })
+    );
+
+    const dataProcessorLambda = new LambdaFunction(
+      this,
+      "DataProcessorLambdaLambda",
+      {
+        runtime: Runtime.NODEJS_18_X,
+        handler: "dataProcessor.dataProcessorHandler",
+        code: Code.fromAsset("dist/lib/cdk-lambdas"),
+        role: dataProcessorLambdaRole,
+      }
+    );
+
+    researchBucket.addEvent(EventType.OBJECT_CREATED, dataProcessorLambda);
 
     ssmParameters.forEach((param) => {
       backendParameterStore.createParameter(param.name, param.value);

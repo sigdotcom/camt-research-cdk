@@ -8,4 +8,6 @@ export enum Permission {
   DYNAMODB = "dynamodb",
   COGNITO = "cognito",
   IDENTITYSTORE = "identitystore",
+  SSM = "ssm",
+  S3 = "s3",
 }

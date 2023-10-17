@@ -75,6 +75,22 @@ export default class LambdaEndpointConstruct extends Construct {
         });
         lambdaRole.addToPolicy(identityStorePolicyStatement);
       }
+      if (permission === Permission.S3) {
+        const s3PolicyStatement = new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: ["s3:PutObject"],
+          resources: ["*"],
+        });
+        lambdaRole.addToPolicy(s3PolicyStatement);
+      }
+      if (permission === Permission.SSM) {
+        const ssmPolicyStatement = new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: ["ssm:GetParameter"],
+          resources: ["*"],
+        });
+        lambdaRole.addToPolicy(ssmPolicyStatement);
+      }
     });
 
     this.lambdaFunction = new NodejsFunction(this, `${props.name}`, {
