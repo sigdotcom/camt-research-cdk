@@ -70,7 +70,7 @@ export class CamtCdkStack extends Stack {
       gitRepo: "camt-research-frontend",
     });
 
-    CamtFrontend.addPolicy(["ssm:GetParameter"], this.Auth.authParameterArns);
+    CamtFrontend.addPolicy(["ssm:GetParameter"], ["*"]);
 
     const userTable = new DynamoDBConstruct(
       this,
