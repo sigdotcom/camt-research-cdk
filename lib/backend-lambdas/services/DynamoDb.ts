@@ -33,6 +33,26 @@ class DynamoDBService {
     }
   }
 
+  async getSensor(sensorId: string) {
+    const input = {
+      TableName: this.tableName,
+      Key: {
+        sensorId: {
+          S: sensorId,
+        },
+      },
+    };
+
+    try {
+      const command = new GetItemCommand(input);
+      const response = await this.dynamoDb.send(command);
+      return response.Item;
+    } catch (error) {
+      console.error("Error fetching sensor:", error);
+      throw error;
+    }
+  }
+
   async updateRole(id: string, role: string) {
     const input = {
       Key: {

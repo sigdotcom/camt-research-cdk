@@ -52,6 +52,20 @@ export class CamtBackendStack extends Stack {
         permissions: [Permission.DYNAMODB],
       },
       {
+        name: "getSensor",
+        entry: "dist/lib/backend-lambdas/getSensor.js",
+        method: HttpMethods.GET,
+        path: "sensors/get",
+        permissions: [Permission.DYNAMODB],
+      },
+      {
+        name: "listSensors",
+        entry: "dist/lib/backend-lambdas/listSensors.js",
+        method: HttpMethods.GET,
+        path: "sensors/list",
+        permissions: [Permission.DYNAMODB],
+      },
+      {
         name: "updatePermission",
         entry: "dist/lib/backend-lambdas/updatePermission.js",
         method: HttpMethods.POST,

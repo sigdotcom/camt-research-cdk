@@ -6,6 +6,7 @@ export interface DynamoDBConstructProps extends StackProps {
   environment: string;
   tableName: string;
   partitionKey: string;
+  sortKey?: string;
 }
 
 export default class DynamoDBConstruct extends Construct {
@@ -13,14 +14,24 @@ export default class DynamoDBConstruct extends Construct {
 
   constructor(scope: Construct, id: string, props: DynamoDBConstructProps) {
     super(scope, id);
-    this.table = new Table(this, "DynamoDBTable", {
+    const tableProps: any = {
       tableName: props.tableName,
       billingMode: BillingMode.PAY_PER_REQUEST,
       partitionKey: {
         name: props.partitionKey,
         type: AttributeType.STRING,
       },
-      removalPolicy: RemovalPolicy.RETAIN, // Use with caution: this deletes the table when the stack is deleted
-    });
+      removalPolicy: RemovalPolicy.RETAIN,
+    };
+
+    // Only add sort key if it is provided
+    if (props.sortKey) {
+      tableProps.sortKey = {
+        name: props.sortKey,
+        type: AttributeType.STRING, // or AttributeType.NUMBER if using UNIX timestamps
+      };
+    }
+
+    this.table = new Table(this, "DynamoDBTable", tableProps);
   }
 }
