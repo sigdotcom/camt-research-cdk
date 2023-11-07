@@ -81,6 +81,16 @@ export class CamtCdkStack extends Stack {
         partitionKey: "userId",
       }
     );
+
+    const sensorTable = new DynamoDBConstruct(
+      this,
+      "ResearchSensorTableConstruct",
+      {
+        environment: environment,
+        tableName: "ResearchSensorTable",
+        partitionKey: "sensorId",
+      }
+    );
   }
   public get authPool(): UserPool {
     return this.Auth.getUserPool;

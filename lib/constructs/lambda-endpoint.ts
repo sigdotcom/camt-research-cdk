@@ -61,7 +61,10 @@ export default class LambdaEndpointConstruct extends Construct {
       if (permission === Permission.COGNITO) {
         const cognitoPolicyStatement = new PolicyStatement({
           effect: Effect.ALLOW,
-          actions: ["cognito-idp:AdminUpdateUserAttributes"],
+          actions: [
+            "cognito-idp:AdminUpdateUserAttributes",
+            "cognito-idp:AdminUserGlobalSignOut",
+          ],
           resources: ["*"],
         });
         lambdaRole.addToPolicy(cognitoPolicyStatement);

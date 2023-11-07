@@ -4,6 +4,7 @@ import IdentityStoreService from "./services/IdentityStore";
 import { generateErrorResponse, headers } from "./common/types";
 import {
   AdminUpdateUserAttributesCommand,
+  AdminUserGlobalSignOutCommand,
   CognitoIdentityProviderClient,
 } from "@aws-sdk/client-cognito-identity-provider";
 
@@ -37,7 +38,7 @@ export const updatePermissionHandler = async (
       UserPoolId: userPoolId,
     };
 
-    //assign SSO permissions to user
+    // assign SSO permissions to user
 
     if (identityId !== "false" && identityId !== "pending") {
       await identityService.assignGroup(identityId, role);
@@ -45,6 +46,12 @@ export const updatePermissionHandler = async (
 
     const command = new AdminUpdateUserAttributesCommand(cognitoParams);
     await cognitoIdp.send(command);
+
+    const signOutCommand = new AdminUserGlobalSignOutCommand({
+      UserPoolId: userPoolId,
+      Username: userId,
+    });
+    await cognitoIdp.send(signOutCommand);
 
     const update = await dynamoService.updateRole(userId, role);
 
