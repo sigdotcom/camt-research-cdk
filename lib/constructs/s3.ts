@@ -18,7 +18,7 @@ export default class S3Construct extends Construct {
       bucketName: props.name,
       cors: [
         {
-          allowedOrigins: ["http://localhost:3000", "http://camt.mstacm.org"],
+          allowedOrigins: ["http://localhost:3000", "https://camt.mstacm.org"],
           allowedMethods: [HttpMethods.PUT],
           allowedHeaders: ["*"],
         },
