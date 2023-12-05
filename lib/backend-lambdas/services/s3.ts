@@ -9,14 +9,15 @@ class S3Service {
   }
 
   async getPresignedPutUrl(bucketName: string) {
-    const date = new Date().toISOString().split("T")[0];
+    const timestamp = new Date().toISOString().replace(/:/g, "-");
+    const key = `data-${timestamp}`;
     const command = new PutObjectCommand({
       Bucket: bucketName,
-      Key: date,
+      Key: key,
     });
 
     // Generate pre-signed URL
-    const url = await getSignedUrl(this.s3, command, { expiresIn: 3600 }); // 1-hour expiration
+    const url = await getSignedUrl(this.s3, command, { expiresIn: 604800 }); // 7 days expiration
     return url;
   }
 }

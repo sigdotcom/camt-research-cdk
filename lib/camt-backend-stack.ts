@@ -1,5 +1,6 @@
 import { Stack, StackProps } from "aws-cdk-lib";
 import {
+  AuthorizationType,
   CognitoUserPoolsAuthorizer,
   LambdaIntegration,
   RestApi,
@@ -104,6 +105,14 @@ export class CamtBackendStack extends Stack {
         path: "users/account/delete",
         permissions: [Permission.DYNAMODB, Permission.IDENTITYSTORE],
       },
+      {
+        name: "uploadIotData",
+        entry: "dist/lib/backend-lambdas/uploadIotData.js",
+        method: HttpMethods.GET,
+        path: "upload/iot",
+        permissions: [Permission.S3],
+        authorizer: true,
+      },
     ];
 
     const authorizer = new CognitoUserPoolsAuthorizer(
@@ -160,9 +169,15 @@ export class CamtBackendStack extends Stack {
         lambdaEndpoint.function
       );
 
-      currentResource.addMethod(endpoint.method, myFunctionIntegration, {
-        authorizer: authorizer,
-      });
+      if (endpoint.authorizer) {
+        currentResource.addMethod(endpoint.method, myFunctionIntegration, {
+          authorizationType: AuthorizationType.IAM,
+        });
+      } else {
+        currentResource.addMethod(endpoint.method, myFunctionIntegration, {
+          authorizer: authorizer,
+        });
+      }
     });
 
     const researchBucket = new S3Construct(this, "ResearchBucketConstruct", {
