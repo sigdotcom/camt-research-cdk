@@ -16,6 +16,7 @@ export interface LambdaEndpointConstructProps extends StackProps {
   method: HttpMethods;
   path: string;
   permissions: Permission[];
+  authorizer?: any;
 }
 export default class LambdaEndpointConstruct extends Construct {
   private readonly lambdaFunction: NodejsFunction;
