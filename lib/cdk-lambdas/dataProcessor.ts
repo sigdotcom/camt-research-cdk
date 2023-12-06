@@ -47,16 +47,8 @@ const dataProcessorHandler = async (event: S3Event) => {
     const getItemCommand = new GetItemCommand(input);
 
     const { Item } = await dynamoDb.send(getItemCommand);
-    const sensorIdMatch = key.match(/\/(\d+)\?/);
-    let displayName;
-    if (sensorIdMatch && sensorIdMatch[1]) {
-      displayName = sensorIdMatch[1]; // Use sensor ID from the key as display name
-    } else {
-      const sensorId = createSensorId(parsedData);
-      console.log("Sensor ID: ", sensorId);
-      const numericSensorId: number = simpleNumericRepresentation(sensorId);
-      displayName = numericSensorId.toString(); // Fallback to numeric sensor ID
-    }
+
+    let displayName = sensorId;
 
     if (Item) {
       const existingData = JSON.parse(Item.data?.S ?? "[]");
@@ -117,10 +109,12 @@ const createSensorId = (data: any[]): string => {
   const hash = createHash("sha256");
 
   // Concatenate the keys as they are to form a string that represents the schema
-  const schemaString = Object.keys(sampleItem).join(":");
-
-  // Update the hash with the schema string
-  hash.update(schemaString);
+  if (sampleItem.sensor_type) {
+    return sampleItem.sensor_type;
+  } else {
+    const schemaString = Object.keys(sampleItem).join(":");
+    hash.update(schemaString);
+  }
 
   // Return a hex digest of the hash
   return hash.digest("hex");
