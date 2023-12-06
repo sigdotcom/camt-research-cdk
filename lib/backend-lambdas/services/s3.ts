@@ -8,9 +8,9 @@ class S3Service {
     this.s3 = new S3Client();
   }
 
-  async getPresignedPutUrl(bucketName: string) {
-    const timestamp = new Date().toISOString().replace(/:/g, "-");
-    const key = `data-${timestamp}`;
+  async getPresignedPutUrl(bucketName: string, streamId: string) {
+    const timestamp = Date.now();
+    const key = `${streamId}/${timestamp}`;
     const command = new PutObjectCommand({
       Bucket: bucketName,
       Key: key,
