@@ -106,12 +106,32 @@ export class CamtBackendStack extends Stack {
         permissions: [Permission.DYNAMODB, Permission.IDENTITYSTORE],
       },
       {
-        name: "uploadIotData",
-        entry: "dist/lib/backend-lambdas/uploadIotData.js",
+        name: "createDevice",
+        entry: "dist/lib/backend-lambdas/createDevice.js",
+        method: HttpMethods.POST,
+        path: "devices/create",
+        permissions: [Permission.DYNAMODB],
+      },
+      {
+        name: "createDeviceStream",
+        entry: "dist/lib/backend-lambdas/createDeviceStream.js",
+        method: HttpMethods.POST,
+        path: "devices/stream/create",
+        permissions: [Permission.DYNAMODB, Permission.S3, Permission.SSM],
+      },
+      {
+        name: "getDevice",
+        entry: "dist/lib/backend-lambdas/getDevice.js",
         method: HttpMethods.GET,
-        path: "upload/iot",
-        permissions: [Permission.S3],
-        authorizer: true,
+        path: "devices/get",
+        permissions: [Permission.DYNAMODB],
+      },
+      {
+        name: "listDevices",
+        entry: "dist/lib/backend-lambdas/listDevices.js",
+        method: HttpMethods.GET,
+        path: "devices/list",
+        permissions: [Permission.DYNAMODB],
       },
     ];
 

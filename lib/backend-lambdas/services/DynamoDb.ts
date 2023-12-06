@@ -1,6 +1,7 @@
 import {
   DynamoDBClient,
   GetItemCommand,
+  PutItemCommand,
   ScanCommand,
   UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
@@ -49,6 +50,26 @@ class DynamoDBService {
       return response.Item;
     } catch (error) {
       console.error("Error fetching sensor:", error);
+      throw error;
+    }
+  }
+
+  async getDevice(deviceId: string) {
+    const input = {
+      TableName: this.tableName,
+      Key: {
+        deviceId: {
+          S: deviceId,
+        },
+      },
+    };
+
+    try {
+      const command = new GetItemCommand(input);
+      const response = await this.dynamoDb.send(command);
+      return response.Item;
+    } catch (error) {
+      console.error("Error fetching device:", error);
       throw error;
     }
   }
@@ -110,7 +131,63 @@ class DynamoDBService {
       throw error;
     }
   }
+  async updateDeviceStreams(
+    deviceId: string,
+    stream: { streamId: string; streamUrl: string }
+  ) {
+    const input = {
+      Key: {
+        deviceId: {
+          S: deviceId,
+        },
+      },
+      UpdateExpression:
+        "SET streams = list_append(if_not_exists(streams, :empty_list), :new_stream)",
+      ExpressionAttributeValues: {
+        ":new_stream": {
+          L: [
+            {
+              M: {
+                streamId: { S: stream.streamId },
+                streamUrl: { S: stream.streamUrl },
+              },
+            },
+          ],
+        },
+        ":empty_list": {
+          L: [],
+        },
+      },
+      TableName: this.tableName,
+    };
 
+    try {
+      const command = new UpdateItemCommand(input);
+      const response = await this.dynamoDb.send(command);
+      return response;
+    } catch (error) {
+      console.error("Error updating device:", error);
+      throw error;
+    }
+  }
+  async createDevice(deviceId: string) {
+    const dynamoDbParams = {
+      TableName: this.tableName,
+      Item: {
+        deviceId: { S: deviceId },
+        streams: { L: [] }, // Initialize streams as an empty list
+      },
+    };
+
+    try {
+      const putCommand = new PutItemCommand(dynamoDbParams);
+      const response = await this.dynamoDb.send(putCommand);
+      return response;
+    } catch (error) {
+      console.error("Error creating device:", error);
+      throw error;
+    }
+  }
   async scan() {
     const input = {
       TableName: this.tableName,
