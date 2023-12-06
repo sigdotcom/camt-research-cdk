@@ -34,7 +34,6 @@ const dataProcessorHandler = async (event: S3Event) => {
     // Create a sensor ID by hashing the concatenated keys
     const sensorId = createSensorId(parsedData);
     console.log("Sensor ID: ", sensorId);
-    const numericSensorId: number = simpleNumericRepresentation(sensorId);
 
     const input = {
       TableName: "ResearchSensorTable",
@@ -48,6 +47,16 @@ const dataProcessorHandler = async (event: S3Event) => {
     const getItemCommand = new GetItemCommand(input);
 
     const { Item } = await dynamoDb.send(getItemCommand);
+    const sensorIdMatch = key.match(/\/(\d+)\?/);
+    let displayName;
+    if (sensorIdMatch && sensorIdMatch[1]) {
+      displayName = sensorIdMatch[1]; // Use sensor ID from the key as display name
+    } else {
+      const sensorId = createSensorId(parsedData);
+      console.log("Sensor ID: ", sensorId);
+      const numericSensorId: number = simpleNumericRepresentation(sensorId);
+      displayName = numericSensorId.toString(); // Fallback to numeric sensor ID
+    }
 
     if (Item) {
       const existingData = JSON.parse(Item.data?.S ?? "[]");
@@ -80,7 +89,7 @@ const dataProcessorHandler = async (event: S3Event) => {
         TableName: "ResearchSensorTable",
         Item: {
           sensorId: { S: sensorId },
-          displayName: { S: `${numericSensorId.toString()}` },
+          displayName: { S: displayName },
           data: { S: JSON.stringify(parsedData) },
         },
       });
